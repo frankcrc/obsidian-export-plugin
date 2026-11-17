@@ -1,7 +1,9 @@
 import { App, Modal, Notice, Setting, type TextComponent } from 'obsidian';
 import type ObsidianExportPlugin from '../main';
 import { buildExportArgs, formatCommandLine } from '../export/command';
+import { findExistingOutputs, predictOutputPaths } from '../export/predict';
 import { ensureDirectory, resolveBinary } from '../export/runner';
+import { countFiles, directoryHasEntries } from '../export/snapshot';
 import {
 	areSamePath,
 	defaultDestination,
@@ -10,6 +12,7 @@ import {
 	resolveUserPath,
 } from '../utils/paths';
 import { pickDirectory } from './directory-picker';
+import { confirmOverwrite } from './confirm-modal';
 import { ExportProgressModal } from './progress-modal';
 
 export interface ExportTarget {
@@ -123,10 +126,15 @@ export class ExportModal extends Modal {
 		const warnings: string[] = [];
 		if (this.destination.trim().length === 0) {
 			warnings.push('请填写目标目录。');
-		} else if (areSamePath(destination, vaultRoot)) {
-			warnings.push('目标目录不能是仓库根目录。');
-		} else if (isInside(vaultRoot, destination)) {
-			warnings.push('目标目录位于仓库内，导出的文件会被 Obsidian 索引，导出整个仓库时还可能被再次导出。');
+		} else {
+			if (areSamePath(destination, vaultRoot)) {
+				warnings.push('目标目录不能是仓库根目录。');
+			} else if (isInside(vaultRoot, destination)) {
+				warnings.push('目标目录位于仓库内，导出的文件会被 Obsidian 索引，导出整个仓库时还可能被再次导出。');
+			}
+			if (directoryHasEntries(destination)) {
+				warnings.push('目标目录不是空的，导出前会检查并提示将被覆盖的文件。');
+			}
 		}
 		this.warningEl.setText(warnings.join(' '));
 		if (warnings.length > 0) {
@@ -148,15 +156,34 @@ export class ExportModal extends Modal {
 			return;
 		}
 
-		this.plugin.settings.destination = destination;
-		await this.plugin.saveSettings();
+		if (this.plugin.settings.confirmOverwrite) {
+			const existingFiles = await countFiles(destination);
+			if (existingFiles > 0) {
+				const predictedOutputs = await predictOutputPaths(this.plugin.settings, {
+					vaultRoot,
+					startAt: this.target.startAt,
+				});
+				const conflicts = findExistingOutputs(destination, predictedOutputs);
+				const confirmed = await confirmOverwrite(this.app, destination, existingFiles, conflicts);
+				if (!confirmed) {
+					return;
+				}
+			}
+		}
 
 		try {
 			await ensureDirectory(destination);
 		} catch (error) {
-			new Notice(`无法创建目标目录：${error instanceof Error ? error.message : String(error)}`);
+			if ((error as NodeJS.ErrnoException).code === 'EEXIST') {
+				new Notice('目标路径已被同名文件占用，请填写文件夹路径。');
+			} else {
+				new Notice(`无法创建目标目录：${error instanceof Error ? error.message : String(error)}`);
+			}
 			return;
 		}
+
+		this.plugin.settings.destination = destination;
+		await this.plugin.saveSettings();
 
 		const binary = resolveBinary(this.plugin.settings.binaryPath);
 		const args = buildExportArgs(this.plugin.settings, {

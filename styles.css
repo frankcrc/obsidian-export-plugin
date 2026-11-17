@@ -54,6 +54,27 @@ If your plugin does not need CSS, delete this file.
 	min-height: 4em;
 }
 
+.oe-file-list {
+	background-color: var(--background-secondary);
+	border-radius: var(--radius-s);
+	font-family: var(--font-monospace);
+	font-size: var(--font-ui-smaller);
+	max-height: 30vh;
+	overflow: auto;
+	padding: var(--size-4-2);
+	user-select: text;
+}
+
+.oe-file-path {
+	padding: 2px 0;
+	word-break: break-all;
+}
+
+.oe-file-more {
+	color: var(--text-muted);
+	padding-top: var(--size-2-2);
+}
+
 .oe-progress-actions {
 	display: flex;
 	gap: var(--size-2-2);

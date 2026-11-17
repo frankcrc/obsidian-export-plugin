@@ -16,6 +16,7 @@ export interface ExportSettings {
 	preserveMtime: boolean;
 	hardLinebreaks: boolean;
 	openAfterExport: boolean;
+	confirmOverwrite: boolean;
 	extraArgs: string;
 }
 
@@ -29,6 +30,7 @@ export const DEFAULT_SETTINGS: ExportSettings = {
 	preserveMtime: false,
 	hardLinebreaks: false,
 	openAfterExport: true,
+	confirmOverwrite: true,
 	extraArgs: '',
 };
 
@@ -157,6 +159,16 @@ export class ExportSettingTab extends PluginSettingTab {
 			.addToggle((toggle) =>
 				toggle.setValue(this.plugin.settings.openAfterExport).onChange((value) => {
 					this.plugin.settings.openAfterExport = value;
+					void this.plugin.saveSettings();
+				}),
+			);
+
+		new Setting(containerEl)
+			.setName('覆盖前提示')
+			.setDesc('目标目录中已有文件时，导出前弹出确认对话框。')
+			.addToggle((toggle) =>
+				toggle.setValue(this.plugin.settings.confirmOverwrite).onChange((value) => {
+					this.plugin.settings.confirmOverwrite = value;
 					void this.plugin.saveSettings();
 				}),
 			);

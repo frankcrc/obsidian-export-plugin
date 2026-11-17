@@ -1,5 +1,7 @@
 import { App, Modal, Notice } from 'obsidian';
+import { join } from 'path';
 import { startExport, type ExportRunResult, type RunningExport } from '../export/runner';
+import { diffSnapshots, snapshotDirectory } from '../export/snapshot';
 import { openFolder } from '../utils/open-folder';
 
 export interface ExportJob {
@@ -19,6 +21,7 @@ export class ExportProgressModal extends Modal {
 	private closed = false;
 	private finished = false;
 	private statusEl!: HTMLElement;
+	private filesEl!: HTMLElement;
 	private logEl!: HTMLElement;
 	private actionsEl!: HTMLElement;
 
@@ -37,7 +40,10 @@ export class ExportProgressModal extends Modal {
 		this.statusEl = contentEl.createEl('p', {
 			text: `正在导出${this.job.title}，请稍候…`,
 		});
+		this.filesEl = contentEl.createDiv({ cls: 'oe-file-list' });
+		this.filesEl.hide();
 		this.logEl = contentEl.createEl('pre', { cls: 'oe-log' });
+		this.logEl.hide();
 		this.actionsEl = contentEl.createDiv({ cls: 'oe-progress-actions' });
 		this.renderActions([{ text: '取消导出', onClick: () => this.running?.cancel() }]);
 		void this.runJob();
@@ -52,6 +58,8 @@ export class ExportProgressModal extends Modal {
 	}
 
 	private async runJob(): Promise<void> {
+		const before = await snapshotDirectory(this.job.destination);
+
 		this.running = startExport({
 			binary: this.job.binary,
 			args: this.job.args,
@@ -62,7 +70,13 @@ export class ExportProgressModal extends Modal {
 		const result = await this.running.result;
 		this.running = null;
 		this.finished = true;
-		this.renderResult(result);
+
+		let changedFiles: string[] = [];
+		if (result.exitCode === 0 && !result.spawnError && !result.canceled) {
+			const after = await snapshotDirectory(this.job.destination);
+			changedFiles = diffSnapshots(before, after);
+		}
+		this.renderResult(result, changedFiles);
 	}
 
 	private appendLog(chunk: string): void {
@@ -70,11 +84,12 @@ export class ExportProgressModal extends Modal {
 		if (this.log.length > MAX_LOG_LENGTH) {
 			this.log = this.log.slice(-MAX_LOG_LENGTH);
 		}
+		this.logEl.show();
 		this.logEl.setText(this.log);
 		this.logEl.scrollTop = this.logEl.scrollHeight;
 	}
 
-	private renderResult(result: ExportRunResult): void {
+	private renderResult(result: ExportRunResult, changedFiles: string[]): void {
 		if (this.closed) {
 			return;
 		}
@@ -88,8 +103,11 @@ export class ExportProgressModal extends Modal {
 			this.statusEl.setText(`无法启动 obsidian-export：${result.spawnError}。请检查设置中的可执行文件路径。`);
 		} else if (result.exitCode !== 0) {
 			this.statusEl.setText(`obsidian-export 退出码：${result.exitCode ?? '未知'}。`);
+		} else if (changedFiles.length > 0) {
+			this.statusEl.setText(`导出完成，共更新 ${changedFiles.length} 个文件：`);
+			this.renderFileList(changedFiles);
 		} else {
-			this.statusEl.setText(`导出完成，文件已写入 ${this.job.destination}。`);
+			this.statusEl.setText(`导出完成，但目标目录中没有检测到新文件：${this.job.destination}`);
 		}
 
 		if (success && this.job.openAfterExport) {
@@ -108,6 +126,23 @@ export class ExportProgressModal extends Modal {
 		this.renderActions(actions);
 
 		new Notice(success ? '导出完成。' : '导出失败，请查看日志。');
+	}
+
+	private renderFileList(files: string[]): void {
+		const limit = 30;
+		for (const file of files.slice(0, limit)) {
+			this.filesEl.createDiv({
+				text: join(this.job.destination, file),
+				cls: 'oe-file-path',
+			});
+		}
+		if (files.length > limit) {
+			this.filesEl.createDiv({
+				text: `……另有 ${files.length - limit} 个文件未显示`,
+				cls: 'oe-file-more',
+			});
+		}
+		this.filesEl.show();
 	}
 
 	private renderActions(actions: Array<{ text: string; onClick: () => void; cta?: boolean }>): void {
