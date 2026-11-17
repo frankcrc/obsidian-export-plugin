@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "export-as-markdown",
 	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"description": "Export notes to plain Markdown with an external command-line tool.",
 	"main": "main.js",
 	"type": "module",
 	"scripts": {

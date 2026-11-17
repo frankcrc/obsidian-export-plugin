@@ -1,11 +1,8 @@
 {
-	"id": "sample-plugin",
-	"name": "Sample Plugin",
+	"id": "export-as-markdown",
+	"name": "Export as Markdown",
 	"version": "1.0.0",
 	"minAppVersion": "1.0.0",
-	"description": "Demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
-	"isDesktopOnly": false
+	"description": "Export notes to plain Markdown with an external command-line tool.",
+	"isDesktopOnly": true
 }

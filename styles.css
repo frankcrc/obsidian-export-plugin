@@ -6,3 +6,57 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
+
+.oe-hidden-file-input {
+	display: none;
+}
+
+.oe-target-info {
+	margin-bottom: var(--size-4-3);
+	word-break: break-all;
+}
+
+.oe-target-detail {
+	color: var(--text-muted);
+}
+
+.oe-warning {
+	color: var(--text-warning);
+	font-size: var(--font-ui-small);
+	margin-top: var(--size-4-2);
+}
+
+.oe-section-label {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+	margin-top: var(--size-4-4);
+	margin-bottom: var(--size-2-2);
+}
+
+.oe-command-preview,
+.oe-log {
+	background-color: var(--background-secondary);
+	border-radius: var(--radius-s);
+	font-size: var(--font-ui-smaller);
+	overflow: auto;
+	padding: var(--size-4-2);
+	user-select: text;
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.oe-command-preview {
+	max-height: 8em;
+}
+
+.oe-log {
+	max-height: 40vh;
+	min-height: 4em;
+}
+
+.oe-progress-actions {
+	display: flex;
+	gap: var(--size-2-2);
+	justify-content: flex-end;
+	margin-top: var(--size-4-3);
+}

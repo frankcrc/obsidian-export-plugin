@@ -29,4 +29,15 @@ export default defineConfig(
 		},
 	},
 	...obsidianmd.configs.recommended,
+	{
+		files: ['src/**/*.ts'],
+		rules: {
+			// The plugin's UI copy is Chinese; skip strings containing CJK characters
+			// instead of forcing sentence case onto them.
+			'obsidianmd/ui/sentence-case': [
+				'warn',
+				{ enforceCamelCaseLower: true, ignoreRegex: ['[\\u4e00-\\u9fff]'] },
+			],
+		},
+	},
 );

@@ -1,92 +1,65 @@
-# Obsidian Sample Plugin
+# Export as Markdown
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+使用本机安装的 [obsidian-export](https://github.com/zoni/obsidian-export) 命令行工具，把 Obsidian 笔记导出为普通 Markdown。插件本身不包含 obsidian-export。
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+## 功能
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
+- **导出当前笔记**：以仓库根目录为源、通过 `--start-at` 只导出当前笔记，链接与嵌入仍能正常解析。
+- **导出文件夹**：选择仓库中的文件夹导出。
+- **导出整个仓库**。
+- 每次导出前可浏览或输入目标目录，目录不存在时会自动创建。
+- 实时显示将执行的命令与运行日志，可随时取消。
+- 记住上次使用的目标目录。
 
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open modal (simple)" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and outputs a Notice on click.
-- Registers a global interval which logs 'setInterval' to the console.
+## 前置条件
 
-## First time developing plugins?
+1. 安装 obsidian-export（本插件不集成）：
+   - 从 [Releases](https://github.com/zoni/obsidian-export/releases) 下载二进制并加入 PATH；或
+   - 运行 `cargo install obsidian-export`。
+2. 验证安装：在终端执行 `obsidian-export --version`。
 
-Quick starting guide for new plugin devs:
+## 构建与安装
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `src/main.ts` to `main.js`.
-- Make changes to `src/main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
-
-## Releasing new releases
-
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
-
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
-
-## Adding your plugin to the community plugin list
-
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
-
-## How to use
-
-- Clone this repo.
-- Make sure your NodeJS is at least v18 (`node --version`).
-- `npm i` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
-
-## Manually installing the plugin
-
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
-
-## Improve code quality with eslint
-
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code.
-- This project already has eslint preconfigured, you can invoke a check by running`npm run lint`
-- Together with a custom eslint [plugin](https://github.com/obsidianmd/eslint-plugin) for Obsidan specific code guidelines.
-- A GitHub action is preconfigured to automatically lint every commit on all branches.
-
-## Funding URL
-
-You can include funding URLs where people who use your plugin can financially support it.
-
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
-
-```json
-{
-	"fundingUrl": "https://buymeacoffee.com"
-}
+```bash
+npm install
+npm run build
 ```
 
-If you have multiple URLs, you can also do:
+将 `main.js`、`manifest.json`、`styles.css` 复制到 `<Vault>/.obsidian/plugins/export-as-markdown/`，然后在 **设置 → 第三方插件** 中启用。
 
-```json
-{
-	"fundingUrl": {
-		"Buy Me a Coffee": "https://buymeacoffee.com",
-		"GitHub Sponsor": "https://github.com/sponsors",
-		"Patreon": "https://www.patreon.com/"
-	}
-}
+## 使用
+
+命令面板中提供：
+
+- `导出当前笔记`
+- `导出文件夹…`
+- `导出整个仓库…`
+
+左侧功能区的下载图标同样可用：有活动笔记时导出当前笔记，否则导出整个仓库。
+
+在弹出的对话框中填写目标目录：**浏览…** 会打开系统目录选择器（可直接新建文件夹），也可以直接粘贴路径。确认命令预览后点击 **开始导出**。
+
+## 设置
+
+- **obsidian-export 路径**：可执行文件完整路径、命令名，或包含可执行文件的文件夹。留空时使用 PATH 中的 `obsidian-export`。
+- **自动检测**：在 PATH 中查找 obsidian-export；**测试**：执行 `--version` 验证是否可用。
+- **忽略 git 规则**（`--no-git`）
+- **frontmatter**（`--frontmatter auto|always|never`）
+- **导出隐藏文件**（`--hidden`）
+- **保留修改时间**（`--preserve-mtime`）
+- **软换行转硬换行**（`--hard-linebreaks`）
+- **允许循环嵌入**（`--no-recursive-embeds`）
+- **额外参数**：按 shell 风格解析（支持引号），例如 `--only-tags 发布`。
+- **导出后打开目标目录**
+
+## 等价命令行示例
+
+```bat
+obsidian-export "E:\data\obsidian\myrepo" --start-at "E:\data\obsidian\myrepo\工作\东信\中间件\实例\集群信息_云上东博.md" --no-git "E:\临时\集群信息导出"
 ```
 
-## API Documentation
+## 说明
 
-See https://docs.obsidian.md
+- 插件只在本机调用 obsidian-export，不发起网络请求，也不上传任何仓库内容。
+- 目标目录不能是仓库根目录；目标目录位于仓库内部时会给出提示，因为导出结果会被 Obsidian 索引，导出整个仓库时还可能被再次包含。
+- 导出布局由 obsidian-export 决定：导出文件夹时笔记平铺到目标目录，导出整个仓库时保留目录结构。
