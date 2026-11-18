@@ -1,69 +1,73 @@
 # Export as Markdown
 
-使用本机安装的 [obsidian-export](https://github.com/zoni/obsidian-export) 命令行工具，把 Obsidian 笔记导出为普通 Markdown。插件本身不包含 obsidian-export。
+English | [简体中文](README.zh-CN.md)
 
-## 功能
+Some Obsidian notes use reference-style syntax, and sharing them as Markdown rather than PDF can be useful. To share a note as a single Markdown file, I found [obsidian-export](https://github.com/zoni/obsidian-export). Since it is a command-line tool, this plugin makes it possible to run it from Obsidian without remembering CLI commands.
 
-- **导出当前笔记**：以仓库根目录为源、通过 `--start-at` 只导出当前笔记，链接与嵌入仍能正常解析。
-- **导出文件夹**：选择仓库中的文件夹导出。
-- **导出整个仓库**。
-- 每次导出前可浏览或输入目标目录，目录不存在时会自动创建。
-- 实时显示将执行的命令与运行日志，可随时取消。
-- 目标目录不为空时，导出前按预计输出路径列出将被覆盖的文件并确认（可在设置中关闭）。
-- 导出完成后列出本次实际写入的文件完整路径（超过 30 个时只显示前 30 个）。
-- 记住上次使用的目标目录。
+This plugin uses the locally installed [obsidian-export](https://github.com/zoni/obsidian-export) CLI to export Obsidian notes as standard Markdown. The plugin does not include obsidian-export.
 
-## 前置条件
+## Features
 
-1. 安装 obsidian-export（本插件不集成）：
-   - 从 [Releases](https://github.com/zoni/obsidian-export/releases) 下载二进制并加入 PATH；或
-   - 运行 `cargo install obsidian-export`。
-2. 验证安装：在终端执行 `obsidian-export --version`。
+- **Export the current note**: Use the vault root as the source and `--start-at` to export only the current note, while still resolving its links and embeds.
+- **Export a folder** from the vault.
+- **Export the entire vault**.
+- Browse for or enter a destination directory before each export; it is created if it does not exist.
+- View the command that will run and live logs, and cancel an export at any time.
+- If the destination is not empty, review the files expected to be overwritten and confirm before exporting (can be disabled in settings).
+- After exporting, view the full paths of files written (up to 30 paths are shown).
+- Remember the last destination directory used.
 
-## 构建与安装
+## Prerequisites
+
+1. Install obsidian-export (it is not bundled with this plugin):
+   - Download a binary from [Releases](https://github.com/zoni/obsidian-export/releases) and add it to your PATH; or
+   - Run `cargo install obsidian-export`.
+2. Verify the installation by running `obsidian-export --version` in a terminal.
+
+## Build and install
 
 ```bash
 npm install
 npm run build
 ```
 
-将 `main.js`、`manifest.json`、`styles.css` 复制到 `<Vault>/.obsidian/plugins/export-as-markdown/`，然后在 **设置 → 第三方插件** 中启用。
+Copy `main.js`, `manifest.json`, and `styles.css` to `<Vault>/.obsidian/plugins/export-as-markdown/`, then enable the plugin in **Settings → Community plugins**.
 
-## 使用
+## Usage
 
-命令面板中提供：
+The command palette provides these commands (shown with their original UI labels):
 
-- `导出当前笔记`
-- `导出文件夹…`
-- `导出整个仓库…`
+- `导出当前笔记` — Export current note
+- `导出文件夹…` — Export folder...
+- `导出整个仓库…` — Export entire vault...
 
-左侧功能区的下载图标同样可用：有活动笔记时导出当前笔记，否则导出整个仓库。
+The download icon in the ribbon works too: it exports the current note when one is active, or the entire vault otherwise.
 
-在弹出的对话框中填写目标目录：**浏览…** 会打开系统目录选择器（可直接新建文件夹），也可以直接粘贴路径。确认命令预览后点击 **开始导出**。
+In the dialog, enter a destination directory. **Browse...** opens the system directory picker (where you can create a folder), or you can paste a path directly. Review the command preview, then select **Start export**.
 
-## 设置
+## Settings
 
-- **obsidian-export 路径**：可执行文件完整路径、命令名，或包含可执行文件的文件夹。留空时使用 PATH 中的 `obsidian-export`。
-- **自动检测**：在 PATH 中查找 obsidian-export；**测试**：执行 `--version` 验证是否可用。
-- **忽略 git 规则**（`--no-git`）
-- **frontmatter**（`--frontmatter auto|always|never`）
-- **导出隐藏文件**（`--hidden`）
-- **保留修改时间**（`--preserve-mtime`）
-- **软换行转硬换行**（`--hard-linebreaks`）
-- **允许循环嵌入**（`--no-recursive-embeds`）
-- **额外参数**：按 shell 风格解析（支持引号），例如 `--only-tags 发布`。
-- **导出后打开目标目录**
-- **覆盖前提示**：目标目录不为空时，导出前按预计输出路径列出将被覆盖的文件并确认（默认开启）。
+- **obsidian-export path**: Full path to the executable, command name, or a folder containing the executable. Leave blank to use `obsidian-export` from PATH.
+- **Auto-detect**: Find obsidian-export on PATH. **Test**: Run `--version` to verify it is available.
+- **Ignore Git rules** (`--no-git`)
+- **Frontmatter** (`--frontmatter auto|always|never`)
+- **Include hidden files** (`--hidden`)
+- **Preserve modification times** (`--preserve-mtime`)
+- **Convert soft line breaks to hard line breaks** (`--hard-linebreaks`)
+- **Allow recursive embeds** (`--no-recursive-embeds`)
+- **Extra arguments**: Parsed using shell-style rules (quotes are supported), for example `--only-tags published`.
+- **Open destination after export**
+- **Confirm before overwriting**: When the destination is not empty, list files expected to be overwritten and ask for confirmation before exporting (enabled by default).
 
-## 等价命令行示例
+## Equivalent CLI example
 
 ```bat
-obsidian-export "E:\data\obsidian\myrepo" --start-at "E:\data\obsidian\myrepo\工作\东信\中间件\实例\集群信息_云上东博.md" --no-git "E:\临时\集群信息导出"
+obsidian-export "C:\Vault" --start-at "C:\Vault\Folder\Note.md" --no-git "C:\ExportedMarkdown"
 ```
 
-## 说明
+## Notes
 
-- 插件只在本机调用 obsidian-export，不发起网络请求，也不上传任何仓库内容。
-- 目标目录不能是仓库根目录；目标目录位于仓库内部时会给出提示，因为导出结果会被 Obsidian 索引，导出整个仓库时还可能被再次包含。
-- 导出布局由 obsidian-export 决定：导出文件夹时笔记平铺到目标目录，导出整个仓库时保留目录结构。
-- 覆盖提示中的文件名是按导出范围和隐藏文件设置推测的；`.export-ignore`、git 忽略规则和标签过滤不参与推测，因此仍会先检查目标目录是否非空。
+- The plugin only runs obsidian-export locally. It makes no network requests and does not upload vault contents.
+- The destination cannot be the vault root. If it is inside the vault, the plugin shows a warning because Obsidian will index the exported files, and a later full-vault export may include them again.
+- The export layout is determined by obsidian-export: files are flattened into the destination when exporting a folder, while the folder structure is preserved when exporting the entire vault.
+- The overwrite confirmation predicts files based on the export scope and hidden-file setting. It does not account for `.export-ignore`, Git ignore rules, or tag filtering, so the plugin still checks whether the destination is non-empty before export.
