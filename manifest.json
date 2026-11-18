@@ -3,6 +3,6 @@
 	"name": "Export as Markdown",
 	"version": "0.0.1",
 	"minAppVersion": "1.8.7",
-	"description": "Export notes to plain Markdown with an external command-line tool.",
+	"description": "Export notes to plain Markdown with the obsidian-export command-line tool.",
 	"isDesktopOnly": true
 }

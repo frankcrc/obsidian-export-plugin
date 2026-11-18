@@ -3,11 +3,18 @@ name: Release Obsidian plugin
 on:
     push:
         tags:
+            # Any tag starts the workflow so that mistakes fail loudly; the
+            # tag is validated against manifest.json before anything is built.
             - '*'
+
+concurrency:
+    group: release-${{ github.ref }}
+    cancel-in-progress: false
 
 jobs:
     build:
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         permissions:
             contents: write
             id-token: write
@@ -21,30 +28,59 @@ jobs:
                   node-version: 24
                   cache: 'npm'
 
-            - name: Build plugin
+            - name: Verify tag matches manifest version
               run: |
-                  npm ci
-                  npm run build
+                  tag="${GITHUB_REF#refs/tags/}"
+                  version=$(node -p "require('./manifest.json').version")
 
-            - name: Check for optional styles
-              id: styles
+                  if [[ ! "$tag" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                      echo "::error::Tag '$tag' is not a plain semantic version (expected x.y.z, without a 'v' prefix)."
+                      exit 1
+                  fi
+
+                  if [[ "$tag" != "$version" ]]; then
+                      echo "::error::Tag '$tag' does not match manifest.json version '$version'. Bump the version before tagging."
+                      exit 1
+                  fi
+
+                  if ! grep -q "\"$tag\"" versions.json; then
+                      echo "::warning::versions.json has no entry for $tag."
+                  fi
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Lint
+              run: npm run lint
+
+            - name: Build plugin
+              run: npm run build
+
+            - name: Collect release assets
+              id: assets
               run: |
-                  [ -f styles.css ] && echo "exists=true" >> "$GITHUB_OUTPUT" || echo "exists=false" >> "$GITHUB_OUTPUT"
+                  {
+                      echo 'files<<ASSETS'
+                      echo 'main.js'
+                      echo 'manifest.json'
+                      if [[ -f styles.css ]]; then echo 'styles.css'; fi
+                      echo 'ASSETS'
+                  } >> "$GITHUB_OUTPUT"
 
             - name: Attest build provenance
               uses: actions/attest@v4
               with:
-                  subject-path: |
-                      main.js
-                      ${{ steps.styles.outputs.exists == 'true' && 'styles.css' || '' }}
+                  subject-path: ${{ steps.assets.outputs.files }}
 
             - name: Create release
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  ASSETS: ${{ steps.assets.outputs.files }}
               run: |
                   tag="${GITHUB_REF#refs/tags/}"
 
                   gh release create "$tag" \
                     --title="$tag" \
                     --draft \
-                    main.js manifest.json ${{ steps.styles.outputs.exists == 'true' && 'styles.css' || '' }}
+                    --verify-tag \
+                    $ASSETS
