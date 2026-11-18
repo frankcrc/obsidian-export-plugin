@@ -70,6 +70,7 @@ obsidian-export "C:\Vault" --start-at "C:\Vault\Folder\Note.md" --no-git "C:\Exp
 ## Notes
 
 - The plugin only runs obsidian-export locally. It makes no network requests and does not upload vault contents.
+- **Permissions**: this is a desktop-only plugin (`isDesktopOnly: true`). It uses the Node.js `fs` module to read the vault folder and to create, inspect, and write the destination folder, and the `child_process` module to run the obsidian-export executable you configure. The exact command is shown in the export dialog before an export starts.
 - **Files outside the vault**: exports are written to the destination directory you pick, which usually lives outside the vault. The plugin reads your vault as the source and writes only to that destination; no other path is read or written.
 - The destination cannot be the vault root. If it is inside the vault, the plugin shows a warning because Obsidian will index the exported files, and a later full-vault export may include them again.
 - The export layout is determined by obsidian-export: files are flattened into the destination when exporting a folder, while the folder structure is preserved when exporting the entire vault.

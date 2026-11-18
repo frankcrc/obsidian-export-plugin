@@ -22,7 +22,6 @@ export const zh: Record<TranslationKey, string> = {
 	'error.vaultRoot': '无法读取仓库路径。',
 	'error.fileSystemOnly': '仅支持本地文件系统仓库。',
 
-	'settings.general.heading': '通用',
 	'settings.language.name': '界面语言',
 	'settings.language.desc':
 		'插件界面语言。对话框和设置会立即更新；命令名称和功能区提示需重新加载插件后更新。',

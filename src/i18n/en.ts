@@ -20,7 +20,6 @@ export const en = {
 	'error.vaultRoot': 'Could not read the vault path.',
 	'error.fileSystemOnly': 'Only local file system vaults are supported.',
 
-	'settings.general.heading': 'General',
 	'settings.language.name': 'Language',
 	'settings.language.desc':
 		'Language of the plugin interface. Dialogs and settings update immediately; reload the plugin to update command names and the ribbon tooltip.',

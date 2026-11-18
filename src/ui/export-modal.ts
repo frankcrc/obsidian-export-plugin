@@ -175,7 +175,7 @@ export class ExportModal extends Modal {
 		try {
 			await ensureDirectory(destination);
 		} catch (error) {
-			if ((error as NodeJS.ErrnoException).code === 'EEXIST') {
+			if (getErrorCode(error) === 'EEXIST') {
 				new Notice(t('error.destinationOccupied'));
 			} else {
 				new Notice(
@@ -207,4 +207,11 @@ export class ExportModal extends Modal {
 			openAfterExport: this.plugin.settings.openAfterExport,
 		}).open();
 	}
+}
+
+function getErrorCode(error: unknown): string | undefined {
+	if (typeof error !== 'object' || error === null || !('code' in error)) {
+		return undefined;
+	}
+	return typeof error.code === 'string' ? error.code : undefined;
 }
