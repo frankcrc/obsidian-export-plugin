@@ -1,9 +1,9 @@
 {
 	"id": "export-as-markdown",
 	"name": "Export as Markdown",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"minAppVersion": "1.8.7",
-	"description": "Export notes to plain Markdown with the obsidian-export command-line tool.",
+	"description": "Export notes to plain Markdown with a locally installed command-line exporter.",
 	"author": "frankcrc",
 	"authorUrl": "https://github.com/frankcrc",
 	"isDesktopOnly": true
