@@ -1,6 +1,6 @@
 {
 	"name": "export-as-markdown",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "Export notes to plain Markdown with the obsidian-export command-line tool.",
 	"main": "main.js",
 	"type": "module",
