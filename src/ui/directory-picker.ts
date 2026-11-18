@@ -1,5 +1,6 @@
 import { Notice } from 'obsidian';
 import { dirname } from 'path';
+import { t } from '../i18n';
 import { loadElectron, type ElectronModule } from '../utils/electron';
 
 /**
@@ -13,7 +14,7 @@ export async function pickDirectory(defaultPath?: string): Promise<string | null
 	if (dialog) {
 		try {
 			const result = await dialog.showOpenDialog({
-				title: '选择导出目录',
+				title: t('dialog.selectDestination'),
 				defaultPath: defaultPath && defaultPath.trim().length > 0 ? defaultPath : undefined,
 				properties: ['openDirectory', 'createDirectory'],
 			});
@@ -50,13 +51,13 @@ function pickDirectoryWithInput(electron: ElectronModule | null): Promise<string
 			const file = input.files?.[0];
 			if (!file) {
 				finish(null);
-				new Notice('没有读取到所选文件夹，请直接输入路径。');
+				new Notice(t('notice.directoryUnreadable'));
 				return;
 			}
 			const absolute = resolveFilePath(file, electron);
 			if (!absolute) {
 				finish(null);
-				new Notice('当前环境无法获取文件夹路径，请直接输入路径。');
+				new Notice(t('notice.directoryPathUnavailable'));
 				return;
 			}
 			const depth = Math.max(0, file.webkitRelativePath.split('/').length - 1);

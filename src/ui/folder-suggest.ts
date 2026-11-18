@@ -1,4 +1,5 @@
 import { App, FuzzySuggestModal, TFolder } from 'obsidian';
+import { t } from '../i18n';
 
 export class FolderSuggestModal extends FuzzySuggestModal<TFolder> {
 	constructor(
@@ -6,7 +7,7 @@ export class FolderSuggestModal extends FuzzySuggestModal<TFolder> {
 		private readonly onChoose: (folder: TFolder) => void,
 	) {
 		super(app);
-		this.setPlaceholder('选择要导出的文件夹');
+		this.setPlaceholder(t('folderSuggest.placeholder'));
 	}
 
 	getItems(): TFolder[] {

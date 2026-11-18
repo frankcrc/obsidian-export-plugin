@@ -16,6 +16,7 @@ This plugin uses the locally installed [obsidian-export](https://github.com/zoni
 - If the destination is not empty, review the files expected to be overwritten and confirm before exporting (can be disabled in settings).
 - After exporting, view the full paths of files written (up to 30 paths are shown).
 - Remember the last destination directory used.
+- The interface is available in English and Simplified Chinese. By default it follows Obsidian's language; you can override it in settings.
 
 ## Prerequisites
 
@@ -35,22 +36,23 @@ Copy `main.js`, `manifest.json`, and `styles.css` to `<Vault>/.obsidian/plugins/
 
 ## Usage
 
-The command palette provides these commands (shown with their original UI labels):
+The command palette provides these commands (the names are localized):
 
-- `导出当前笔记` — Export current note
-- `导出文件夹…` — Export folder...
-- `导出整个仓库…` — Export entire vault...
+- `Export current note`
+- `Export folder…`
+- `Export entire vault…`
 
 The download icon in the ribbon works too: it exports the current note when one is active, or the entire vault otherwise.
 
-In the dialog, enter a destination directory. **Browse...** opens the system directory picker (where you can create a folder), or you can paste a path directly. Review the command preview, then select **Start export**.
+In the dialog, enter a destination directory. **Browse…** opens the system directory picker (where you can create a folder), or you can paste a path directly. Review the command preview, then select **Start export**.
 
 ## Settings
 
+- **Language**: Interface language. **Auto** follows Obsidian; English and Simplified Chinese are available. Dialogs and settings update immediately, while command names and the ribbon tooltip update after reloading the plugin.
 - **obsidian-export path**: Full path to the executable, command name, or a folder containing the executable. Leave blank to use `obsidian-export` from PATH.
 - **Auto-detect**: Find obsidian-export on PATH. **Test**: Run `--version` to verify it is available.
 - **Ignore Git rules** (`--no-git`)
-- **Frontmatter** (`--frontmatter auto|always|never`)
+- **Frontmatter strategy** (`--frontmatter auto|always|never`)
 - **Include hidden files** (`--hidden`)
 - **Preserve modification times** (`--preserve-mtime`)
 - **Convert soft line breaks to hard line breaks** (`--hard-linebreaks`)

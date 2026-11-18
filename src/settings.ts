@@ -1,12 +1,14 @@
 import { App, Notice, PluginSettingTab, Setting } from 'obsidian';
 import type ObsidianExportPlugin from './main';
 import { detectBinary, probeBinary, resolveBinary } from './export/runner';
+import { isLanguagePreference, setLanguage, t, type LanguagePreference } from './i18n';
 import { pickDirectory } from './ui/directory-picker';
 import { getVaultRoot } from './utils/paths';
 
 export type FrontmatterStrategy = 'auto' | 'always' | 'never';
 
 export interface ExportSettings {
+	language: LanguagePreference;
 	binaryPath: string;
 	destination: string;
 	noGit: boolean;
@@ -21,6 +23,7 @@ export interface ExportSettings {
 }
 
 export const DEFAULT_SETTINGS: ExportSettings = {
+	language: 'auto',
 	binaryPath: '',
 	destination: '',
 	noGit: true,
@@ -46,14 +49,37 @@ export class ExportSettingTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		new Setting(containerEl).setName('命令行工具').setHeading();
+		new Setting(containerEl).setName(t('settings.general.heading')).setHeading();
 
 		new Setting(containerEl)
-			.setName('obsidian-export 路径')
-			.setDesc('可执行文件的完整路径、包含可执行文件的文件夹，或命令名（从 PATH 中查找）。留空时使用 obsidian-export。')
+			.setName(t('settings.language.name'))
+			.setDesc(t('settings.language.desc'))
+			.addDropdown((dropdown) =>
+				dropdown
+					.addOption('auto', t('settings.language.auto'))
+					.addOption('en', t('settings.language.en'))
+					.addOption('zh', t('settings.language.zh'))
+					.setValue(this.plugin.settings.language)
+					.onChange((value) => {
+						if (!isLanguagePreference(value) || value === this.plugin.settings.language) {
+							return;
+						}
+						this.plugin.settings.language = value;
+						void this.plugin.saveSettings();
+						setLanguage(value);
+						this.display();
+						new Notice(t('notice.languageChanged'));
+					}),
+			);
+
+		new Setting(containerEl).setName(t('settings.cli.heading')).setHeading();
+
+		new Setting(containerEl)
+			.setName(t('settings.binary.name'))
+			.setDesc(t('settings.binary.desc'))
 			.addText((text) =>
 				text
-					.setPlaceholder('obsidian-export 或完整路径')
+					.setPlaceholder(t('settings.binary.placeholder'))
 					.setValue(this.plugin.settings.binaryPath)
 					.onChange((value) => {
 						this.plugin.settings.binaryPath = value;
@@ -61,35 +87,35 @@ export class ExportSettingTab extends PluginSettingTab {
 					}),
 			)
 			.addButton((button) =>
-				button.setButtonText('选择文件夹…').onClick(() => {
+				button.setButtonText(t('settings.binary.browse')).onClick(() => {
 					void this.chooseBinaryFolder();
 				}),
 			)
 			.addButton((button) =>
-				button.setButtonText('自动检测').onClick(() => {
+				button.setButtonText(t('settings.binary.detect')).onClick(() => {
 					void this.detect();
 				}),
 			)
 			.addButton((button) =>
-				button.setButtonText('测试').onClick(() => {
+				button.setButtonText(t('settings.binary.test')).onClick(() => {
 					void this.testBinary();
 				}),
 			);
 
 		new Setting(containerEl)
-			.setName('打开下载页面')
-			.setDesc('本插件不包含 obsidian-export，需要单独安装。')
+			.setName(t('settings.download.name'))
+			.setDesc(t('settings.download.desc'))
 			.addButton((button) =>
-				button.setButtonText('下载').onClick(() => {
+				button.setButtonText(t('settings.download.button')).onClick(() => {
 					window.open('https://github.com/zoni/obsidian-export/releases');
 				}),
 			);
 
-		new Setting(containerEl).setName('导出选项').setHeading();
+		new Setting(containerEl).setName(t('settings.export.heading')).setHeading();
 
 		new Setting(containerEl)
-			.setName('忽略 git 规则')
-			.setDesc('对应 --no-git，导出时不按 .gitignore 排除文件。')
+			.setName(t('settings.noGit.name'))
+			.setDesc(t('settings.noGit.desc'))
 			.addToggle((toggle) =>
 				toggle.setValue(this.plugin.settings.noGit).onChange((value) => {
 					this.plugin.settings.noGit = value;
@@ -98,13 +124,13 @@ export class ExportSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName('Frontmatter 策略')
-			.setDesc('对应 --frontmatter，控制导出文件是否保留 YAML frontmatter。')
+			.setName(t('settings.frontmatter.name'))
+			.setDesc(t('settings.frontmatter.desc'))
 			.addDropdown((dropdown) =>
 				dropdown
-					.addOption('auto', '自动')
-					.addOption('always', '始终添加')
-					.addOption('never', '移除')
+					.addOption('auto', t('settings.frontmatter.auto'))
+					.addOption('always', t('settings.frontmatter.always'))
+					.addOption('never', t('settings.frontmatter.never'))
 					.setValue(this.plugin.settings.frontmatter)
 					.onChange((value) => {
 						if (value === 'auto' || value === 'always' || value === 'never') {
@@ -115,8 +141,8 @@ export class ExportSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName('导出隐藏文件')
-			.setDesc('对应 --hidden。')
+			.setName(t('settings.hidden.name'))
+			.setDesc(t('settings.hidden.desc'))
 			.addToggle((toggle) =>
 				toggle.setValue(this.plugin.settings.hidden).onChange((value) => {
 					this.plugin.settings.hidden = value;
@@ -125,8 +151,8 @@ export class ExportSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName('保留修改时间')
-			.setDesc('对应 --preserve-mtime。')
+			.setName(t('settings.preserveMtime.name'))
+			.setDesc(t('settings.preserveMtime.desc'))
 			.addToggle((toggle) =>
 				toggle.setValue(this.plugin.settings.preserveMtime).onChange((value) => {
 					this.plugin.settings.preserveMtime = value;
@@ -135,8 +161,8 @@ export class ExportSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName('软换行转硬换行')
-			.setDesc('对应 --hard-linebreaks，类似 Obsidian 的严格换行设置。')
+			.setName(t('settings.hardLinebreaks.name'))
+			.setDesc(t('settings.hardLinebreaks.desc'))
 			.addToggle((toggle) =>
 				toggle.setValue(this.plugin.settings.hardLinebreaks).onChange((value) => {
 					this.plugin.settings.hardLinebreaks = value;
@@ -145,8 +171,8 @@ export class ExportSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName('允许循环嵌入')
-			.setDesc('对应 --no-recursive-embeds。笔记互相嵌入时插入链接而不是报错。')
+			.setName(t('settings.noRecursiveEmbeds.name'))
+			.setDesc(t('settings.noRecursiveEmbeds.desc'))
 			.addToggle((toggle) =>
 				toggle.setValue(this.plugin.settings.noRecursiveEmbeds).onChange((value) => {
 					this.plugin.settings.noRecursiveEmbeds = value;
@@ -155,7 +181,7 @@ export class ExportSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName('导出后打开目标目录')
+			.setName(t('settings.openAfterExport.name'))
 			.addToggle((toggle) =>
 				toggle.setValue(this.plugin.settings.openAfterExport).onChange((value) => {
 					this.plugin.settings.openAfterExport = value;
@@ -164,8 +190,8 @@ export class ExportSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName('覆盖前提示')
-			.setDesc('目标目录中已有文件时，导出前弹出确认对话框。')
+			.setName(t('settings.confirmOverwrite.name'))
+			.setDesc(t('settings.confirmOverwrite.desc'))
 			.addToggle((toggle) =>
 				toggle.setValue(this.plugin.settings.confirmOverwrite).onChange((value) => {
 					this.plugin.settings.confirmOverwrite = value;
@@ -174,11 +200,11 @@ export class ExportSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName('额外参数')
-			.setDesc('附加到命令行中的其他参数，例如 --only-tags 发布。')
+			.setName(t('settings.extraArgs.name'))
+			.setDesc(t('settings.extraArgs.desc'))
 			.addTextArea((text) =>
 				text
-					.setPlaceholder('--only-tags 发布')
+					.setPlaceholder(t('settings.extraArgs.placeholder'))
 					.setValue(this.plugin.settings.extraArgs)
 					.onChange((value) => {
 						this.plugin.settings.extraArgs = value;
@@ -198,15 +224,15 @@ export class ExportSettingTab extends PluginSettingTab {
 	}
 
 	private async detect(): Promise<void> {
-		new Notice('正在查找 obsidian-export…');
+		new Notice(t('notice.detecting'));
 		const found = await detectBinary();
 		if (found) {
 			this.plugin.settings.binaryPath = found;
 			await this.plugin.saveSettings();
 			this.display();
-			new Notice(`已找到：${found}`);
+			new Notice(t('notice.found', { path: found }));
 		} else {
-			new Notice('未在 PATH 中找到 obsidian-export，请手动填写完整路径。');
+			new Notice(t('notice.notFound'));
 		}
 	}
 

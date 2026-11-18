@@ -2,6 +2,7 @@ import { App, Modal, Notice } from 'obsidian';
 import { join } from 'path';
 import { startExport, type ExportRunResult, type RunningExport } from '../export/runner';
 import { diffSnapshots, snapshotDirectory } from '../export/snapshot';
+import { t } from '../i18n';
 import { openFolder } from '../utils/open-folder';
 
 export interface ExportJob {
@@ -36,16 +37,16 @@ export class ExportProgressModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass('oe-progress-modal');
-		this.setTitle('正在导出');
+		this.setTitle(t('progress.title'));
 		this.statusEl = contentEl.createEl('p', {
-			text: `正在导出${this.job.title}，请稍候…`,
+			text: t('progress.running', { target: this.job.title }),
 		});
 		this.filesEl = contentEl.createDiv({ cls: 'oe-file-list' });
 		this.filesEl.hide();
 		this.logEl = contentEl.createEl('pre', { cls: 'oe-log' });
 		this.logEl.hide();
 		this.actionsEl = contentEl.createDiv({ cls: 'oe-progress-actions' });
-		this.renderActions([{ text: '取消导出', onClick: () => this.running?.cancel() }]);
+		this.renderActions([{ text: t('progress.cancel'), onClick: () => this.running?.cancel() }]);
 		void this.runJob();
 	}
 
@@ -95,19 +96,21 @@ export class ExportProgressModal extends Modal {
 		}
 
 		const success = result.exitCode === 0 && !result.spawnError && !result.canceled;
-		this.titleEl.setText(success ? '导出完成' : '导出失败');
+		this.titleEl.setText(success ? t('progress.successTitle') : t('progress.failureTitle'));
 
 		if (result.canceled) {
-			this.statusEl.setText('导出已取消。');
+			this.statusEl.setText(t('progress.canceled'));
 		} else if (result.spawnError) {
-			this.statusEl.setText(`无法启动 obsidian-export：${result.spawnError}。请检查设置中的可执行文件路径。`);
+			this.statusEl.setText(t('progress.spawnError', { error: result.spawnError }));
 		} else if (result.exitCode !== 0) {
-			this.statusEl.setText(`obsidian-export 退出码：${result.exitCode ?? '未知'}。`);
+			this.statusEl.setText(
+				t('progress.exitCode', { code: result.exitCode ?? t('common.unknown') }),
+			);
 		} else if (changedFiles.length > 0) {
-			this.statusEl.setText(`导出完成，共更新 ${changedFiles.length} 个文件：`);
+			this.statusEl.setText(t('progress.changed', { count: changedFiles.length }));
 			this.renderFileList(changedFiles);
 		} else {
-			this.statusEl.setText(`导出完成，但目标目录中没有检测到新文件：${this.job.destination}`);
+			this.statusEl.setText(t('progress.noChanges', { destination: this.job.destination }));
 		}
 
 		if (success && this.job.openAfterExport) {
@@ -117,15 +120,15 @@ export class ExportProgressModal extends Modal {
 		const actions: Array<{ text: string; onClick: () => void; cta?: boolean }> = [];
 		if (success) {
 			actions.push({
-				text: '打开目标目录',
+				text: t('progress.open'),
 				onClick: () => openFolder(this.job.destination),
 				cta: true,
 			});
 		}
-		actions.push({ text: '关闭', onClick: () => this.close() });
+		actions.push({ text: t('common.close'), onClick: () => this.close() });
 		this.renderActions(actions);
 
-		new Notice(success ? '导出完成。' : '导出失败，请查看日志。');
+		new Notice(success ? t('notice.exportSuccess') : t('notice.exportFailed'));
 	}
 
 	private renderFileList(files: string[]): void {
@@ -138,7 +141,7 @@ export class ExportProgressModal extends Modal {
 		}
 		if (files.length > limit) {
 			this.filesEl.createDiv({
-				text: `……另有 ${files.length - limit} 个文件未显示`,
+				text: t('common.moreFiles', { count: files.length - limit }),
 				cls: 'oe-file-more',
 			});
 		}

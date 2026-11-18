@@ -1,5 +1,6 @@
 import { Notice, Platform } from 'obsidian';
 import { spawn } from 'child_process';
+import { t } from '../i18n';
 import { loadElectron } from './electron';
 
 export function openFolder(directory: string): void {
@@ -34,6 +35,6 @@ function openWithSystemCommand(directory: string): void {
 		});
 		child.unref();
 	} catch {
-		new Notice('无法打开目标目录。');
+		new Notice(t('notice.openFolderFailed'));
 	}
 }

@@ -1,4 +1,5 @@
 import { App, Modal, Setting } from 'obsidian';
+import { t } from '../i18n';
 
 export interface ConfirmOptions {
 	title: string;
@@ -19,10 +20,10 @@ export function confirmOverwrite(
 		new ConfirmModal(
 			app,
 			{
-				title: '目标目录已存在文件',
-				message: `目标目录中已有 ${existingFileCount} 个文件。`,
+				title: t('confirm.title'),
+				message: t('confirm.message', { count: existingFileCount }),
 				detail: destination,
-				confirmText: '继续导出',
+				confirmText: t('confirm.continue'),
 				conflicts,
 			},
 			resolve,
@@ -54,7 +55,7 @@ class ConfirmModal extends Modal {
 		}
 		new Setting(contentEl)
 			.addButton((button) =>
-				button.setButtonText(this.options.cancelText ?? '取消').onClick(() => {
+				button.setButtonText(this.options.cancelText ?? t('common.cancel')).onClick(() => {
 					this.finish(false);
 				}),
 			)
@@ -88,14 +89,14 @@ class ConfirmModal extends Modal {
 	private renderConflicts(conflicts: string[]): void {
 		if (conflicts.length === 0) {
 			this.contentEl.createEl('p', {
-				text: '按导出范围预计，没有同名文件会被覆盖。',
+				text: t('confirm.noConflicts'),
 			});
 			return;
 		}
 
 		const limit = 30;
 		this.contentEl.createEl('p', {
-			text: `按导出范围预计，以下 ${conflicts.length} 个文件将被覆盖（其他文件不会被删除）：`,
+			text: t('confirm.conflicts', { count: conflicts.length }),
 		});
 		const list = this.contentEl.createDiv({ cls: 'oe-file-list' });
 		for (const conflict of conflicts.slice(0, limit)) {
@@ -103,7 +104,7 @@ class ConfirmModal extends Modal {
 		}
 		if (conflicts.length > limit) {
 			list.createDiv({
-				text: `……另有 ${conflicts.length - limit} 个文件未显示`,
+				text: t('common.moreFiles', { count: conflicts.length - limit }),
 				cls: 'oe-file-more',
 			});
 		}

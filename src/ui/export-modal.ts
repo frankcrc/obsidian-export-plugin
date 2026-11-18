@@ -4,6 +4,7 @@ import { buildExportArgs, formatCommandLine } from '../export/command';
 import { findExistingOutputs, predictOutputPaths } from '../export/predict';
 import { ensureDirectory, resolveBinary } from '../export/runner';
 import { countFiles, directoryHasEntries } from '../export/snapshot';
+import { t } from '../i18n';
 import {
 	areSamePath,
 	defaultDestination,
@@ -45,19 +46,19 @@ export class ExportModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass('oe-export-modal');
-		this.setTitle('导出为 Markdown');
+		this.setTitle(t('modal.export.title'));
 
 		const info = contentEl.createDiv({ cls: 'oe-target-info' });
-		info.createSpan({ text: `${this.target.title}：` });
+		info.createSpan({ text: t('modal.export.target', { title: this.target.title }) });
 		info.createSpan({ text: this.target.detail, cls: 'oe-target-detail' });
 
 		new Setting(contentEl)
-			.setName('目标目录')
-			.setDesc('导出的文件会写入此目录，目录不存在时会自动创建。')
+			.setName(t('modal.export.destinationName'))
+			.setDesc(t('modal.export.destinationDesc'))
 			.addText((text) => {
 				this.destinationInput = text;
 				text
-					.setPlaceholder('例如 D:\\导出\\笔记')
+					.setPlaceholder(t('modal.export.destinationPlaceholder'))
 					.setValue(this.destination)
 					.onChange((value) => {
 						this.destination = value;
@@ -66,7 +67,7 @@ export class ExportModal extends Modal {
 				text.inputEl.addClass('oe-destination-input');
 			})
 			.addButton((button) =>
-				button.setButtonText('浏览…').onClick(() => {
+				button.setButtonText(t('common.browse')).onClick(() => {
 					void this.browse();
 				}),
 			);
@@ -74,10 +75,10 @@ export class ExportModal extends Modal {
 		this.warningEl = contentEl.createDiv({ cls: 'oe-warning' });
 		this.warningEl.hide();
 
-		contentEl.createDiv({ text: '将执行的命令', cls: 'oe-section-label' });
+		contentEl.createDiv({ text: t('modal.export.command'), cls: 'oe-section-label' });
 		this.previewEl = contentEl.createEl('pre', { cls: 'oe-command-preview' });
 
-		new Setting(contentEl).setName('导出后打开目标目录').addToggle((toggle) =>
+		new Setting(contentEl).setName(t('settings.openAfterExport.name')).addToggle((toggle) =>
 			toggle.setValue(this.plugin.settings.openAfterExport).onChange((value) => {
 				this.plugin.settings.openAfterExport = value;
 				void this.plugin.saveSettings();
@@ -85,10 +86,10 @@ export class ExportModal extends Modal {
 		);
 
 		new Setting(contentEl)
-			.addButton((button) => button.setButtonText('取消').onClick(() => this.close()))
+			.addButton((button) => button.setButtonText(t('common.cancel')).onClick(() => this.close()))
 			.addButton((button) =>
 				button
-					.setButtonText('开始导出')
+					.setButtonText(t('modal.export.start'))
 					.setCta()
 					.onClick(() => {
 						void this.startExport();
@@ -125,15 +126,15 @@ export class ExportModal extends Modal {
 
 		const warnings: string[] = [];
 		if (this.destination.trim().length === 0) {
-			warnings.push('请填写目标目录。');
+			warnings.push(t('warning.destinationRequired'));
 		} else {
 			if (areSamePath(destination, vaultRoot)) {
-				warnings.push('目标目录不能是仓库根目录。');
+				warnings.push(t('warning.vaultRoot'));
 			} else if (isInside(vaultRoot, destination)) {
-				warnings.push('目标目录位于仓库内，导出的文件会被 Obsidian 索引，导出整个仓库时还可能被再次导出。');
+				warnings.push(t('warning.insideVault'));
 			}
 			if (directoryHasEntries(destination)) {
-				warnings.push('目标目录不是空的，导出前会检查并提示将被覆盖的文件。');
+				warnings.push(t('warning.notEmpty'));
 			}
 		}
 		this.warningEl.setText(warnings.join(' '));
@@ -147,12 +148,12 @@ export class ExportModal extends Modal {
 	private async startExport(): Promise<void> {
 		const vaultRoot = getVaultRoot(this.app);
 		if (this.destination.trim().length === 0) {
-			new Notice('请填写目标目录。');
+			new Notice(t('warning.destinationRequired'));
 			return;
 		}
 		const destination = resolveUserPath(vaultRoot, this.destination);
 		if (areSamePath(destination, vaultRoot)) {
-			new Notice('目标目录不能是仓库根目录。');
+			new Notice(t('warning.vaultRoot'));
 			return;
 		}
 
@@ -175,9 +176,13 @@ export class ExportModal extends Modal {
 			await ensureDirectory(destination);
 		} catch (error) {
 			if ((error as NodeJS.ErrnoException).code === 'EEXIST') {
-				new Notice('目标路径已被同名文件占用，请填写文件夹路径。');
+				new Notice(t('error.destinationOccupied'));
 			} else {
-				new Notice(`无法创建目标目录：${error instanceof Error ? error.message : String(error)}`);
+				new Notice(
+					t('error.createDestination', {
+						error: error instanceof Error ? error.message : String(error),
+					}),
+				);
 			}
 			return;
 		}

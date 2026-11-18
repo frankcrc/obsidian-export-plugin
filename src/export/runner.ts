@@ -2,6 +2,7 @@ import { spawn, type ChildProcess } from 'child_process';
 import { promises as fsPromises, statSync } from 'fs';
 import { join } from 'path';
 import { Platform } from 'obsidian';
+import { t } from '../i18n';
 import { cleanUserPath } from '../utils/paths';
 
 export interface ExportRunResult {
@@ -99,12 +100,18 @@ export function probeBinary(binary: string, cwd: string): Promise<BinaryProbe> {
 	return running.result.then((result) => {
 		const output = `${result.stdout}${result.stderr}`.trim();
 		if (result.spawnError) {
-			return { ok: false, message: `无法启动 obsidian-export：${result.spawnError}` };
+			return { ok: false, message: t('probe.spawnError', { error: result.spawnError }) };
 		}
 		if (result.exitCode !== 0) {
-			return { ok: false, message: output.length > 0 ? output : `obsidian-export 退出码 ${result.exitCode ?? '未知'}。` };
+			return {
+				ok: false,
+				message:
+					output.length > 0
+						? output
+						: t('probe.exitCode', { code: result.exitCode ?? t('common.unknown') }),
+			};
 		}
-		return { ok: true, message: output.length > 0 ? output : 'obsidian-export 可用。' };
+		return { ok: true, message: output.length > 0 ? output : t('probe.available') };
 	});
 }
 

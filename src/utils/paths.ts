@@ -1,13 +1,14 @@
 import { App, FileSystemAdapter, Platform } from 'obsidian';
 import { dirname, isAbsolute, join, resolve, sep } from 'path';
 import { homedir } from 'os';
+import { t } from '../i18n';
 
 export function getVaultRoot(app: App): string {
 	const adapter = app.vault.adapter;
 	if (adapter instanceof FileSystemAdapter) {
 		return adapter.getBasePath();
 	}
-	throw new Error('仅支持本地文件系统仓库。');
+	throw new Error(t('error.fileSystemOnly'));
 }
 
 export function toAbsoluteVaultPath(app: App, vaultPath: string): string {
