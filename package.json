@@ -1,6 +1,6 @@
 {
 	"name": "export-as-markdown",
-	"version": "0.0.3",
+	"version": "0.0.4",
 	"description": "Export notes to plain Markdown with a locally installed command-line exporter.",
 	"main": "main.js",
 	"type": "module",

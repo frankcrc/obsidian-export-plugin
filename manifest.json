@@ -1,7 +1,7 @@
 {
 	"id": "export-as-markdown",
 	"name": "Export as Markdown",
-	"version": "0.0.3",
+	"version": "0.0.4",
 	"minAppVersion": "1.8.7",
 	"description": "Export notes to plain Markdown with a locally installed command-line exporter.",
 	"author": "frankcrc",
